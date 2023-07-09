@@ -55,7 +55,7 @@ function UserFrom(props) {
   const [error, setError] = useState({});
 
   const handleSubmit = () => {
-    const webSocket = io("http://localhost:1010");
+    const webSocket = io("https://socketapi-y5iz.onrender.com");
 
     webSocket.emit("userCreate", { ...state });
 
@@ -85,7 +85,7 @@ function UserFrom(props) {
   };
 
   const handleUpdate = () => {
-    const webSocket = io("http://localhost:1010");
+    const webSocket = io("https://socketapi-y5iz.onrender.com");
 
     webSocket.emit("userUpdate", { ...state });
 
