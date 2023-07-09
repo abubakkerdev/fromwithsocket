@@ -11,7 +11,7 @@ function UserTable() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const webSocket = io("http://localhost:1010");
+    const webSocket = io("https://socketapi-y5iz.onrender.com");
 
     webSocket.emit("userList", "demo");
     webSocket.on("allUser", (data) => {
@@ -22,7 +22,7 @@ function UserTable() {
   }, []);
 
   const handleDelete = (id) => {
-    const webSocket = io("http://localhost:1010");
+    const webSocket = io("https://socketapi-y5iz.onrender.com");
 
     webSocket.emit("userDelete", id);
     webSocket.on("deleteUser", (data) => {
@@ -33,7 +33,7 @@ function UserTable() {
   };
 
   const handleEdit = (id) => {
-    const webSocket = io("http://localhost:1010");
+    const webSocket = io("https://socketapi-y5iz.onrender.com");
 
     webSocket.emit("userEdit", id);
     webSocket.on("editUser", (data) => {
