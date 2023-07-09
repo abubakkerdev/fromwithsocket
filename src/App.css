@@ -1,0 +1,9 @@
+.main-div-margin {
+    margin-top: 70px;
+}
+
+.alert-danger {
+    padding: 10px !important;
+    text-align: center !important;
+    margin-top: 10px !important;
+}
