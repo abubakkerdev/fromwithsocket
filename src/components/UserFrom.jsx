@@ -6,7 +6,6 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import { useSelector } from "react-redux";
-import { io } from "socket.io-client";
 
 const initialState = {
   uname: "",
@@ -38,7 +37,7 @@ const reducer = (state, action) => {
   }
 };
 
-function UserFrom(props) {
+function UserFrom({ socket }) {
   const userInfo = useSelector((state) => state.user.value);
   const [state, inputDispatch] = useReducer(reducer, initialState);
 
@@ -55,15 +54,12 @@ function UserFrom(props) {
   const [error, setError] = useState({});
 
   const handleSubmit = () => {
-    const webSocket = io("https://socketapi-y5iz.onrender.com");
+    socket.emit("userCreate", { ...state });
 
-    webSocket.emit("userCreate", { ...state });
-
-    webSocket.on("storeUser", (data) => {
-      if (!Array.isArray(data)) {
-        setError({ ...data });
+    socket.on("storeUser", (data) => {
+      if (Array.isArray(data)) {
+        setError(data[0]);
       } else {
-        webSocket.emit("userList", "demo");
         setError({});
         inputDispatch({
           type: "inputEmptyHandler",
@@ -85,20 +81,17 @@ function UserFrom(props) {
   };
 
   const handleUpdate = () => {
-    const webSocket = io("https://socketapi-y5iz.onrender.com");
+    socket.emit("userUpdate", { ...state });
 
-    webSocket.emit("userUpdate", { ...state });
-
-    webSocket.on("updateUser", (data) => {
-      if (Object.keys(data).length === 0) {
-        webSocket.emit("userList", "demo");
+    socket.on("updateUser", (data) => {
+      if (Array.isArray(data)) {
+        setError(data[0]);
+      } else {
         setError({});
         inputDispatch({
           type: "inputEmptyHandler",
         });
         setSelected("");
-      } else {
-        setError({ ...data });
       }
     });
   };
@@ -118,7 +111,7 @@ function UserFrom(props) {
       <Card.Body>
         <Row>
           <Col>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+            <Form.Group className="mb-3">
               <Form.Label>User Name</Form.Label>
               <Form.Control
                 type="text"
@@ -135,7 +128,7 @@ function UserFrom(props) {
             </Form.Group>
           </Col>
           <Col>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput2">
+            <Form.Group className="mb-3">
               <Form.Label>Email address</Form.Label>
               <Form.Control
                 type="email"
@@ -156,7 +149,7 @@ function UserFrom(props) {
         </Row>
         <Row>
           <Col>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput3">
+            <Form.Group className="mb-3">
               <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
@@ -173,7 +166,7 @@ function UserFrom(props) {
             </Form.Group>
           </Col>
           <Col>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput4">
+            <Form.Group className="mb-3">
               <Form.Label>Country</Form.Label>
 
               <Form.Select

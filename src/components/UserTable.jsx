@@ -4,43 +4,66 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Button from "react-bootstrap/Button";
 import { useDispatch } from "react-redux";
 import { insertData } from "../slice/userSlice";
-import { io } from "socket.io-client";
 
-function UserTable() {
+function UserTable({ socket }) {
   const [alluser, setAllUser] = useState([]);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const webSocket = io("https://socketapi-y5iz.onrender.com");
+    socket.on("connected", (message) => {
+      console.log(message);
+    });
 
-    webSocket.emit("userList", "demo");
-    webSocket.on("allUser", (data) => {
+    socket.on("allUser", (data) => {
       if (Array.isArray(data)) {
-        setAllUser(() => [...data]);
+        setAllUser(data);
       }
     });
+
+    socket.on("deleteUser", (id) => {
+      if (typeof id == "string") {
+        setAllUser((prevItems) => prevItems.filter((item) => item._id !== id));
+      }
+    });
+
+    socket.on("storeUser", (newItem) => {
+      if (!Array.isArray(newItem)) {
+        setAllUser((prevItems) => [...prevItems, newItem]);
+      }
+    });
+
+    socket.on("updateUser", (data) => {
+      if (!Array.isArray(data)) {
+        setAllUser((prevItems) =>
+          prevItems.map((item) => (item._id === data._id ? data : item))
+        );
+      }
+    });
+
+    socket.emit("userList");
+
+    return () => {
+      socket.off("connected");
+      socket.off("userList");
+      socket.off("allUser");
+      socket.off("storeUser");
+      socket.off("updateUser");
+      socket.off("deleteUser");
+    };
   }, []);
 
   const handleDelete = (id) => {
-    const webSocket = io("https://socketapi-y5iz.onrender.com");
-
-    webSocket.emit("userDelete", id);
-    webSocket.on("deleteUser", (data) => {
-      if (data === "success") {
-        webSocket.emit("userList", "demo");
-      }
-    });
+    if (id) {
+      socket.emit("userDelete", id);
+    }
   };
 
   const handleEdit = (id) => {
-    const webSocket = io("https://socketapi-y5iz.onrender.com");
+    let userId = alluser.findIndex((user) => user._id === id);
 
-    webSocket.emit("userEdit", id);
-    webSocket.on("editUser", (data) => {
-      if ("email" in data) {
-        dispatch(insertData({ ...data }));
-      }
-    });
+    if (userId >= 0) {
+      dispatch(insertData(alluser[userId]));
+    }
   };
 
   return (
@@ -88,8 +111,9 @@ function UserTable() {
           ))
         ) : (
           <tr>
-            <td>1</td>
-            <td colSpan={5}>There was no value.</td>
+            <td colSpan={6} className="errorText">
+              There have no value.
+            </td>
           </tr>
         )}
       </tbody>
